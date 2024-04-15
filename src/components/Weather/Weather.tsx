@@ -1,103 +1,63 @@
-'use client'
-import Head from "next/head";
+"use client";
 import Image from "next/image";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BsSearch } from "react-icons/bs";
 import WeatherDetails from "./WeatherDetails";
+import { useSearchParams } from "next/navigation";
 
-interface WeatherData {
-  coord: {
-    lon: number;
-    lat: number;
-  };
-  weather: [
-    {
-      id: number;
-      main: string;
-      description: string;
-      icon: string;
-    }
-  ];
-  base: string;
-  main: {
-    temp: number;
-    feels_like: number;
-    temp_min: number;
-    temp_max: number;
-    pressure: number;
-    humidity: number;
-    sea_level: number;
-    grnd_level: number;
-  };
-  visibility: number;
-  wind: {
-    speed: number;
-    deg: number;
-    gust: number;
-  };
-  clouds: {
-    all: number;
-  };
-  dt: number;
-  sys: {
-    type: number;
-    id: number;
-    country: string;
-    sunrise: number;
-    sunset: number;
-  };
-  timezone: number;
-  id: number;
-  name: string;
-  cod: number;
-}
+import { WeatherData } from "@/utils/interface";
+import BackgroundImage from "./BackgroundImage";
+import { fetchWeatherData } from "@/utils/getWeatherData";
 
 export default function Weather() {
   const [city, setCity] = useState("");
-  const [weather, setWeather] = useState<WeatherData>({}as WeatherData);
+  const [weather, setWeather] = useState<WeatherData>({} as WeatherData);
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
 
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}`;
+  const search = searchParams.get("city");
 
-const fetchWeather = (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-  try {
-    axios.get(url).then((response) => {
-      setWeather(response.data);
-    });
-  } catch (error) {
-    console.error(error);
-    alert(
-      "Sorry, there was an issue getting the weather data. Please try again."
+  const handleSearch = async(e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+    const weatherData = await fetchWeatherData(
+      city,
     );
-  } finally {
-    setCity("");
-    setLoading(false);
-  }
-};
-console.log(weather);
+    setWeather(weatherData);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setCity("");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    (async() => {
+      
+    if (search) {
+      const weatherData = await fetchWeatherData(search);
+      setWeather(weatherData);
+    }
+    })();
+
+  }, [search,]);
   if (loading) {
     return <h1>Loading....</h1>;
   } else {
-      console.log(weather);
     return (
       <>
         {/* Overlay */}
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/70 z-[1]" />
         {/* Background image */}
-        <Image
-          src="https://images.pexels.com/photos/531756/pexels-photo-531756.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-          layout="fill"
-          alt="background Image"
-          className="object-cover"
-        />
+        <BackgroundImage />
 
         {/* Search */}
         <div className="relative flex justify-between items-center max-w-[500px] w-full m-auto pt-4 px-4 text-white z-10">
           <form
-            onSubmit={fetchWeather}
+            onSubmit={handleSearch}
             className="flex justify-between items-center w-full m-auto p-3 bg-transparent border border-gray-300 text-white rounded-2xl"
           >
             <input
@@ -107,7 +67,7 @@ console.log(weather);
               placeholder="Search city"
             />
 
-            <button onClick={fetchWeather}>
+            <button onClick={handleSearch}>
               <BsSearch size={20} />
             </button>
           </form>

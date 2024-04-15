@@ -31,28 +31,36 @@ interface City {
 }
 
 interface CityTableProps {
-  cities:City,
-  loading:boolean,
-  hasMore:boolean,
-  onLoadMore:Function
+  cities: City[];
+  loading: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
 }
 
-const CityTable:React.FC<CityTableProps> = ({ cities, loading, hasMore, onLoadMore }) => {
-    const observer = useRef<IntersectionObserver | null>(null);
+const CityTable: React.FC<CityTableProps> = ({
+  cities,
+  loading,
+  hasMore,
+  onLoadMore,
+}) => {
+  const observer = useRef<IntersectionObserver | null>(null);
 
-    const lastCityElementRef = useCallback(
-      (node:HTMLElement | null) => {
-        if (loading || !hasMore) return;
-        if (observer.current) observer.current.disconnect();
-        observer.current = new IntersectionObserver((entries) => {
-          if (entries[0].isIntersecting) {
-            onLoadMore();
-          }
-        });
-        if (node) observer.current.observe(node);
-      },
-      [loading, hasMore, onLoadMore]
-    );
+  const lastCityElementRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (loading || !hasMore) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          onLoadMore();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore, onLoadMore]
+  );
+
   return (
     <div className="overflow-x-scroll">
       <table className="min-w-[90%] shadow-md  border mx-auto border-gray-100  my-6">
@@ -87,6 +95,7 @@ const CityTable:React.FC<CityTableProps> = ({ cities, loading, hasMore, onLoadMo
 };
 
 export default CityTable;
+
 const headers = [
   "Geoname ID",
   "Name",

@@ -1,72 +1,34 @@
-'use client'
 import { ReactSearchAutocomplete } from "react-search-autocomplete";
+import { City } from "@/utils/interface";
+import { useEffect, useState } from "react";
+import { getAllCityData } from "@/utils/getAllCityData";
 
-  type Item = {
-    id: number;
-    name: string;
+interface SearchAutoCompleteProps {
+  cities: City[];
+}
+
+const SearchAutoComplete: React.FC<SearchAutoCompleteProps> = ({ cities }) => {
+  const [filterCities, setFilterCities] = useState<City[]>([]);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [location, setLocation] = useState<string>("");
+
+  useEffect(() => {
+    // if (location) {
+    // }
+    getAllCity(setFilterCities, location);
+  }, []);
+
+  console.log(filterCities);
+  const handleOnSearch = (event, string: string, results: City[]) => {
+    console.log(string, results, event);
+    setLocation(string);
   };
 
-  type GeonameData = {
-    geoname_id: string;
-    name: string;
-    ascii_name: string;
-    alternate_names: string[];
-    feature_class: string;
-    feature_code: string;
-    country_code: string;
-    cou_name_en: string;
-    country_code_2: string | null;
-    admin1_code: string;
-    admin2_code: string;
-    admin3_code: string | null;
-    admin4_code: string | null;
-    population: number;
-    elevation: number | null;
-    dem: number;
-    timezone: string;
-    modification_date: string;
-    label_en: string;
-    coordinates: {
-      lon: number;
-      lat: number;
-    };
-  };
-
-
-const SearchAutoComplete = ({ cities}) => {
-  console.log(cities);
-  const items: Item[] = [
-    {
-      id: 0,
-      name: "Cobol",
-    },
-    {
-      id: 1,
-      name: "JavaScript",
-    },
-    {
-      id: 2,
-      name: "Basic",
-    },
-    {
-      id: 3,
-      name: "PHP",
-    },
-    {
-      id: 4,
-      name: "Java",
-    },
-  ];
-
-  const handleOnSearch = (string: string, results: Item[]) => {
-    console.log(string, results);
-  };
-
-  const handleOnHover = (result: Item) => {
+  const handleOnHover = (result: City) => {
     console.log(result);
   };
 
-  const handleOnSelect = (item: Item) => {
+  const handleOnSelect = (item: City) => {
     console.log(item);
   };
 
@@ -78,15 +40,14 @@ const SearchAutoComplete = ({ cities}) => {
     console.log("Cleared");
   };
 
-  const formatResult = (item: Item) => {
-    console.log(item);
+  const formatResult = (item: City) => {
     return (
       <>
         <span style={{ display: "block", textAlign: "left" }}>
-          id: {item.id}
+          id: {item.recordid}
         </span>
         <span style={{ display: "block", textAlign: "left" }}>
-          name: {item.name}
+          name: {item.fields.name}
         </span>
       </>
     );
@@ -109,6 +70,20 @@ const SearchAutoComplete = ({ cities}) => {
   );
 };
 
-
-
 export default SearchAutoComplete;
+import axios from "axios";
+
+// Fetch cities function
+export const getAllCity = async (setCities, cityName) => {
+  try {
+    const response = await axios.get(
+      `https://public.opendatasoft.com/api/records/1.0/search/?dataset=geonames-all-cities-with-a-population-1000&rows=20&q=${cityName}`
+    );
+    const newCities = response.data.records;
+    const searchData = newCities.map((i)=> i.fields.name == cityName)
+    console.log(searchData);
+    setCities((prevCities) => [...prevCities, ...newCities]);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};

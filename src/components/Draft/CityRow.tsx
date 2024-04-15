@@ -4,16 +4,10 @@ import { City } from "@/utils/interface";
 
 interface CityRowProps {
   city:City,
-
 }
 
 const CityRow:React.FC<CityRowProps> = ({ city }) => {
-
-  const handleWeather= (cityName:string)=>{
-console.log(cityName);
-window.open(`/weather?city=${cityName}`, "_blank");
-
-  }
+  console.log(city);
   // return
   return (
     <tr
@@ -21,7 +15,7 @@ window.open(`/weather?city=${cityName}`, "_blank");
       className="hover:bg-gray-50 transition duration-300"
     >
       <td className="px-4 py-4 border-b">{city.fields.geoname_id}</td>
-      <td className="px-4 py-4 border-b" onClick={()=> handleWeather(city.fields.name)}>{city.fields.name}</td>
+      <td className="px-4 py-4 border-b">{city.fields.name}</td>
       <td className="px-4 py-4 border-b">{city.fields.cou_name_en}</td>
       <td className="px-4 py-4 border-b">{city.fields.ascii_name}</td>
       {/* <td className="px-4 py-4 border-b  overflow-auto">{city.fields.alternate_names}</td> */}
